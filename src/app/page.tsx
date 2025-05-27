@@ -45,6 +45,7 @@ export default function HomePage() {
                     p.setup = () => {
                         p.createCanvas(640, 480).parent(sketchRef.current!);
                         capture = p.createCapture("video");
+                        p.frameRate(20)
                         if (capture) {
                             capture.size(640, 480);
                             capture.hide();
@@ -168,7 +169,14 @@ export default function HomePage() {
                                                       p.mouseY >= textY - currentTextSize - hideRadiusPadding &&
                                                       p.mouseY <= textY + hideRadiusPadding;
 
-                                if (!mouseOverText) {
+                                if (mouseOverText) {
+                                    if (Math.random() < 0.1) {
+                                        p.textSize(currentTextSize * 1.5);
+                                        p.fill("white")
+                                        p.text(displayText, x, y);
+                                    }
+                                } else {
+                                    p.textSize(currentTextSize);
                                     p.text(displayText, x, y);
                                 }
                             }
