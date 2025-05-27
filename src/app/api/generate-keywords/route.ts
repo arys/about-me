@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
                 {
                     role: "user",
                     content: [
-                        { type: "text", text: "Generate 5-7 concise keywords that describe the person or main subject in this image. Focus on descriptive terms. Return only the keywords as a comma-separated list, without any preamble or explanation." },
+                        { type: "text", text: "Generate 10-15 concise keywords that describe the person or main subject in this image. Focus on descriptive terms. Return only the keywords as a comma-separated list, without any preamble or explanation." },
                         {
                             type: "image_url",
                             image_url: {
