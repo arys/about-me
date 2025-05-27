@@ -140,6 +140,8 @@ export default function HomePage() {
                             p.background(0);
                         }
 
+                        const hideRadiusPadding = 20; // Define a padding for the hide radius
+
                         for (let y = 0; y <= p.height; y += 15) {
                             for (let x = 0; x <= p.width; x += 15) {
                                 const index = (x + y * p.width) * 4;
@@ -147,11 +149,28 @@ export default function HomePage() {
                                 if (pixels && index + 2 < pixels.length) {
                                     p.fill(pixels[index], pixels[index + 1], pixels[index + 2]);
                                 } else {
-                                    p.fill(255);
+                                    p.fill(255); // Default fill if pixels are not available
                                 }
-                                p.textSize(p.random(5, 20));
+
+                                const currentTextSize = p.random(5, 20);
+                                p.textSize(currentTextSize);
                                 const displayText = keywords.length > 0 ? p.random(keywords) : "ABOUT ME";
-                                p.text(displayText, x, y);
+
+                                // Calculate text bounds
+                                const textW = p.textWidth(displayText);
+                                const textX = x;
+                                const textY = y; // y is the baseline for p.text
+
+                                // Check if mouse is over this text with padding
+                                // Text is drawn with baseline at y, extending upwards by currentTextSize
+                                const mouseOverText = p.mouseX >= textX - hideRadiusPadding &&
+                                                      p.mouseX <= textX + textW + hideRadiusPadding &&
+                                                      p.mouseY >= textY - currentTextSize - hideRadiusPadding &&
+                                                      p.mouseY <= textY + hideRadiusPadding;
+
+                                if (!mouseOverText) {
+                                    p.text(displayText, x, y);
+                                }
                             }
                         }
                     };
