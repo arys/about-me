@@ -37,10 +37,11 @@ export default function HomePage() {
                 const P5 = p5Module.default; // p5 constructor
                 const sketchProgram = (p: CustomP5Instance) => {
                     let capture: any;
-                    let keywords: string[] = [];
+                    let keywordLayers: string[][] = [[], [], [], []]; // 4 layers of keywords
                     let isFetchingKeywords = false;
                     let keywordUpdateIntervalId: NodeJS.Timeout | null = null;
                     let internalIsStarted = false;
+                    let hasStartedLayering = false;
 
                     p.setup = () => {
                         p.createCanvas(640, 480).parent(sketchRef.current!);
@@ -63,18 +64,18 @@ export default function HomePage() {
                         }
 
                         const initialImageData = captureFrameAsBase64();
-                        if (initialImageData) fetchKeywordsFromAPI(initialImageData);
+                        if (initialImageData) fetchKeywordLayersSequentially(initialImageData);
 
                         if (keywordUpdateIntervalId) {
                             clearInterval(keywordUpdateIntervalId);
                         }
                         keywordUpdateIntervalId = setInterval(() => {
                             if (!isFetchingKeywords && capture) {
-                                console.log("Interval: Capturing frame and fetching keywords...");
+                                console.log("Interval: Capturing frame and fetching keyword layers...");
                                 const imageData = captureFrameAsBase64();
-                                if (imageData) fetchKeywordsFromAPI(imageData);
+                                if (imageData) fetchKeywordLayersSequentially(imageData);
                             }
-                        }, 10000);
+                        }, 15000);
                     };
                     p.handleStartP5 = handleStartP5Internal;
 
@@ -88,16 +89,56 @@ export default function HomePage() {
                         return dataUrl;
                     }
 
-                    async function fetchKeywordsFromAPI(base64ImageData: string) {
+                    async function fetchKeywordLayersSequentially(base64ImageData: string) {
                         if (!p) return;
-                        console.log("Attempting to fetch keywords from Next.js backend...");
+                        console.log("Starting sequential keyword layer generation...");
                         isFetchingKeywords = true;
+                        hasStartedLayering = true;
+                        
                         try {
-                            const response = await fetch('/api/generate-keywords', {
+                            // Reset all layers
+                            keywordLayers = [[], [], [], []];
+                            
+                            // Fetch layer 1 (colors and basic elements)
+                            console.log("Fetching layer 1: colors and basic elements");
+                            const layer1 = await fetchLayeredKeywords(base64ImageData, undefined);
+                            keywordLayers[0] = layer1;
+                            
+                            // Fetch layer 2 (more specific based on layer 1)
+                            console.log("Fetching layer 2: building on layer 1");
+                            const layer2 = await fetchLayeredKeywords(base64ImageData, layer1);
+                            keywordLayers[1] = layer2;
+                            
+                            // Fetch layer 3 (more specific based on layer 2)
+                            console.log("Fetching layer 3: building on layer 2");
+                            const layer3 = await fetchLayeredKeywords(base64ImageData, layer2);
+                            keywordLayers[2] = layer3;
+                            
+                            // Fetch layer 4 (most specific based on layer 3)
+                            console.log("Fetching layer 4: building on layer 3");
+                            const layer4 = await fetchLayeredKeywords(base64ImageData, layer3);
+                            keywordLayers[3] = layer4;
+                            
+                            console.log("All keyword layers generated:", keywordLayers);
+                        } catch (error) {
+                            console.error("Error fetching keyword layers:", error);
+                            keywordLayers = [["Error"], ["Analyzing"], ["Image"], ["Content"]];
+                        } finally {
+                            isFetchingKeywords = false;
+                        }
+                    }
+
+                    async function fetchLayeredKeywords(base64ImageData: string, existingKeywords?: string[]): Promise<string[]> {
+                        try {
+                            const response = await fetch('/api/generate-keywords-layered', {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ image: base64ImageData })
+                                body: JSON.stringify({ 
+                                    image: base64ImageData,
+                                    keywords: existingKeywords 
+                                })
                             });
+                            
                             if (!response.ok) {
                                 let errorData = { error: `API request failed with status ${response.status}` }; 
                                 try {
@@ -108,17 +149,12 @@ export default function HomePage() {
                                 }
                                 throw new Error(errorData.error || 'Unknown server error');
                             }
+                            
                             const data = await response.json();
-                            keywords = data.keywords || []; 
-                            console.log("Keywords received from backend:", keywords);
-                            if (keywords.length === 0) {
-                                console.warn("Received empty keywords array from backend.");
-                            }
+                            return data.keywords || [];
                         } catch (error) {
-                            console.error("Error fetching keywords:", error);
-                            keywords = ["Error analyzing"];
-                        } finally {
-                            isFetchingKeywords = false;
+                            console.error("Error fetching layered keywords:", error);
+                            return ["Error"];
                         }
                     }
 
@@ -142,6 +178,7 @@ export default function HomePage() {
                         }
 
                         const hideRadiusPadding = 20; // Define a padding for the hide radius
+                        const quarterHeight = p.height / 4;
 
                         for (let y = 0; y <= p.height; y += 15) {
                             for (let x = 0; x <= p.width; x += 15) {
@@ -155,7 +192,28 @@ export default function HomePage() {
 
                                 const currentTextSize = p.random(5, 20);
                                 p.textSize(currentTextSize);
-                                const displayText = keywords.length > 0 ? p.random(keywords) : "ABOUT ME";
+                                
+                                // Determine which layer to use based on y position (bottom to top: layer 0-3)
+                                let layerIndex: number;
+                                if (y >= quarterHeight * 3) layerIndex = 0; // Bottom quarter - layer 1 (colors)
+                                else if (y >= quarterHeight * 2) layerIndex = 1; // Third quarter - layer 2
+                                else if (y >= quarterHeight) layerIndex = 2; // Second quarter - layer 3
+                                else layerIndex = 3; // Top quarter - layer 4 (most specific)
+                                
+                                const currentLayerKeywords = keywordLayers[layerIndex];
+                                
+                                // Only show text if:
+                                // 1. Layering hasn't started yet (show "ABOUT ME")
+                                // 2. Layering has started AND this layer has keywords
+                                let displayText: string | null = null;
+                                if (!hasStartedLayering) {
+                                    displayText = "ABOUT ME";
+                                } else if (currentLayerKeywords.length > 0) {
+                                    displayText = p.random(currentLayerKeywords) as string;
+                                }
+                                
+                                // Skip rendering text if no text to display
+                                if (!displayText) continue;
 
                                 // Calculate text bounds
                                 const textW = p.textWidth(displayText);
