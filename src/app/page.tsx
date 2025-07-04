@@ -62,6 +62,7 @@ export default function HomePage() {
                         if (startButtonElement) {
                             startButtonElement.style.display = 'none';
                         }
+                        keywordLayers = [[], [], [], []];
 
                         const initialImageData = captureFrameAsBase64();
                         if (initialImageData) fetchKeywordLayersSequentially(initialImageData);
@@ -97,7 +98,6 @@ export default function HomePage() {
                         
                         try {
                             // Reset all layers
-                            keywordLayers = [[], [], [], []];
                             
                             // Fetch layer 1 (colors and basic elements)
                             console.log("Fetching layer 1: colors and basic elements");
@@ -302,6 +302,22 @@ export default function HomePage() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center" style={{ borderRadius: 10, zIndex: 1000 }}>
                 <div id="sketch-holder" ref={sketchRef}  style={{ borderRadius: 10, overflow: 'hidden' }} className="w-[640px] h-[480px] mx-auto border border-gray-300 bg-black"></div>
             </div>
+            {isClient && isStartedState && (
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 flex items-center justify-center" style={{ 
+                    zIndex: 2000,
+                    marginTop: '280px' // 240px (half sketch height) + 40px spacing
+                }}>
+                    <p style={{
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        fontSize: '1.1rem',
+                        fontWeight: '300',
+                        textAlign: 'center',
+                        letterSpacing: '0.5px'
+                    }}>
+                        move your mouse around
+                    </p>
+                </div>
+            )}
         </div>
     );
 }
