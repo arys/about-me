@@ -177,11 +177,11 @@ export default function HomePage() {
                             p.background(0);
                         }
 
-                        const hideRadiusPadding = 20; // Define a padding for the hide radius
+                        const hideRadiusPadding = 160; // Define a padding for the hide radius
                         const quarterHeight = p.height / 4;
 
-                        for (let y = 0; y <= p.height; y += 15) {
-                            for (let x = 0; x <= p.width; x += 15) {
+                        for (let y = 0; y <= p.height; y += 30) {
+                            for (let x = 0; x <= p.width; x += 30) {
                                 const index = (x + y * p.width) * 4;
                                 const pixels = capture.pixels;
                                 if (pixels && index + 2 < pixels.length) {
@@ -229,12 +229,12 @@ export default function HomePage() {
 
                                 if (mouseOverText) {
                                     if (Math.random() < 0.1) {
-                                        p.textSize(currentTextSize * 1.5);
+                                        p.textSize(currentTextSize * 3);
                                         p.fill("white")
                                         p.text(displayText, x, y);
                                     }
                                 } else {
-                                    p.textSize(currentTextSize);
+                                    p.textSize(currentTextSize * 2);
                                     p.text(displayText, x, y);
                                 }
                             }
