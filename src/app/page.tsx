@@ -177,7 +177,7 @@ export default function HomePage() {
                             p.background(0);
                         }
 
-                        const hideRadiusPadding = 160; // Define a padding for the hide radius
+                        const hideRadiusPadding = 80; // Define a padding for the hide radius
                         const quarterHeight = p.height / 4;
 
                         for (let y = 0; y <= p.height; y += 30) {
@@ -314,7 +314,7 @@ export default function HomePage() {
                         textAlign: 'center',
                         letterSpacing: '0.5px'
                     }}>
-                        move your mouse around
+                        every 15 seconds new words are generated
                     </p>
                 </div>
             )}
