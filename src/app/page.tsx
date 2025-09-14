@@ -44,11 +44,11 @@ export default function HomePage() {
                     let hasStartedLayering = false;
 
                     p.setup = () => {
-                        p.createCanvas(640, 480).parent(sketchRef.current!);
+                        p.createCanvas(1280, 720).parent(sketchRef.current!);
                         capture = p.createCapture("video");
                         p.frameRate(20)
                         if (capture) {
-                            capture.size(640, 480);
+                            capture.size(1280, 720);
                             capture.hide();
                         }
                     };
@@ -300,7 +300,7 @@ export default function HomePage() {
                 </div>
             )}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center" style={{ borderRadius: 10, zIndex: 1000 }}>
-                <div id="sketch-holder" ref={sketchRef}  style={{ borderRadius: 10, overflow: 'hidden' }} className="w-[640px] h-[480px] mx-auto border border-gray-300 bg-black"></div>
+                <div id="sketch-holder" ref={sketchRef}  style={{ borderRadius: 10, overflow: 'hidden' }} className="w-[1280px] h-[720px] mx-auto border border-gray-300 bg-black"></div>
             </div>
             {isClient && isStartedState && (
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 flex items-center justify-center" style={{ 
